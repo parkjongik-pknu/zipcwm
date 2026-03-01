@@ -1,9 +1,9 @@
-Package: zip
-Title: Zero-Inflated Poisson
+Package: zip_cwm
+Title: ZIP_CWM
 Version: 0.1.0
 Author: parkjongik
 Maintainer: Jongik Park <dhwkd1230@pukyong.ac.kr>
-Description: This package provides functions forZero-Inflated Poisson (ZIP) with IRLS
+Description: This package provides functions for ZIP with CWM
 License: MIT
 Encoding: UTF-8
 LazyData: true
