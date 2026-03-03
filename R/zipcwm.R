@@ -93,7 +93,7 @@ zipcwm <- function(X, Z, Y,
       pi_inv <- as.vector(1 / (1 + exp(-(Z_in %*% gamma_k[, k]))))
       
     # 0이 아닌 경우의 기본 Poisson 계산
-    f_y_zip <- (1 - pi_inv) * dpois(Y, lambda = mu_y_vec)
+    f_y_zip <- (1 - pi_inv) * dpois(Y, lambda = mu_y)
 
     # Y가 0인 경우 Zero-inflation 계산
     f_y_zip[Y == 0] <- pi_inv[Y == 0] + f_y_zip[Y == 0]
@@ -156,6 +156,7 @@ zipcwm <- function(X, Z, Y,
               beta = beta_k, gamma = gamma_k, loglik = ll_history,
               init_method = init_method))
 }
+
 
 
 
