@@ -59,38 +59,20 @@ zipcwm <- function(X, Z, Y,
   beta_k  <- matrix(0, Pin_x, K)
   gamma_k <- matrix(0, Pin_z, K)
   
-for(k in 1:K) {
+  for(k in 1:K) {
     idx <- which(initial_clusters == k)
     if(length(idx) < 5) idx <- sample(1:N, 10) 
     
     mu_k[[k]] <- colMeans(All_Covariates[idx, , drop=FALSE])
     sigma_k[[k]] <- cov(All_Covariates[idx, , drop=FALSE]) + diag(1e-5, Pall)
     
-    # --------------------------------------------------------
-    # 1. Beta 초기화: 가급적 0이 아닌 데이터(Y > 0)만 사용하여 
-    # 순수 푸아송 평균에 가깝게 추정
-    # --------------------------------------------------------
-    idx_pos <- idx[Y[idx] > 0]
-    if(length(idx_pos) > Pin_x) {
-      beta_k[, k] <- coef(glm(Y[idx_pos] ~ X[idx_pos, , drop=FALSE], family = poisson))
-    } else {
-      beta_k[, k] <- coef(glm(Y[idx] ~ X[idx, , drop=FALSE], family = poisson))
-    }
-    beta_k[is.na(beta_k[, k]), k] <- 0 # 결측치 방어
-    
-    # --------------------------------------------------------
-    # 2. Gamma 초기화: GLM을 쓰지 않고 보수적인 상수로 세팅
-    # --------------------------------------------------------
-    # 모든 기울기 계수는 0으로 세팅하여 공변량의 영향을 중립으로 만듦
-    gamma_k[, k] <- 0 
-    
-    # Intercept만 약 -1.38로 설정 (logit(0.2) ≒ -1.38)
-    # 이는 '처음에는 구조적 0이 약 20% 정도만 섞여있다고 치자'는 의미입니다.
-    # EM 알고리즘이 돌면서 E-step의 사후 확률이 진짜 구조적 0을 찾아냅니다.
-    gamma_k[1, k] <- -1.38 
-    
-    # 다양성을 위해 약간의 무작위 노이즈를 더해주는 것도 좋습니다.
-    # gamma_k[, k] <- gamma_k[, k] + rnorm(Pin_z, mean = 0, sd = 0.1)
+    # 차원 축소 방지
+    beta_k[, k]  <- coef(glm(Y[idx] ~ X[idx, , drop=FALSE], family = poisson))
+    gamma_k[, k] <- coef(glm(as.numeric(Y[idx] == 0) ~ Z[idx, , drop=FALSE], family = binomial))
+
+    # NA 발생 시 0으로 대체
+    beta_k[is.na(beta_k[, k]), k] <- 0
+    gamma_k[is.na(gamma_k[, k]), k] <- 0
   }
   
   ll_history <- numeric()
