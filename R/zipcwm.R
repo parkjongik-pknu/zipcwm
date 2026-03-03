@@ -68,7 +68,7 @@ zipcwm <- function(X, Z, Y,
     
     # 차원 축소 방지
     beta_k[, k]  <- coef(glm(Y[idx] ~ X[idx, , drop=FALSE], family = poisson))
-    gamma_k[, k] <- coef(glm(as.numeric(Y[idx] == 0) ~ Z[idx, , drop=FALSE], family = binomial))
+    gamma_k[, k] <- coef(glm(as.numeric(Y[idx] == 0) ~ Z[idx, , drop=FALSE], family = quasibinomial))
 
     # NA 발생 시 0으로 대체
     beta_k[is.na(beta_k[, k]), k] <- 0
@@ -164,6 +164,7 @@ zipcwm <- function(X, Z, Y,
               beta = beta_k, gamma = gamma_k, loglik = ll_history,
               init_method = init_method))
 }
+
 
 
 
