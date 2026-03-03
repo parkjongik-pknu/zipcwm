@@ -24,7 +24,14 @@ zipcwm <- function(X, Z, Y,
   Pin_z <- ncol(Z_in)
   
   # # combination of covariates X and Z
-  All_Covariates <- cbind(X, Z[, !(colnames(Z) %in% colnames(X)), drop=FALSE])
+  # 안전한 방법 (열 이름이 반드시 있다고 가정하거나 고유한 열만 병합)
+  # 만약 X와 Z의 컬럼을 그대로 합치고 중복만 제거한다면:
+  All_Covariates <- X
+  for (i in 1:ncol(Z)) {
+  if (!any(apply(X, 2, function(x) identical(x, Z[, i])))) {
+    All_Covariates <- cbind(All_Covariates, Z[, i])
+    }
+  }
   Pall <- ncol(All_Covariates)
   init_data <- All_Covariates
   
@@ -143,4 +150,5 @@ zipcwm <- function(X, Z, Y,
               beta = beta_k, gamma = gamma_k, loglik = ll_history,
               init_method = init_method))
 }
+
 
