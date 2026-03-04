@@ -23,7 +23,7 @@ zipcwm <- function(X, Z, Y,
   Pin_x <- ncol(X_in)
   Pin_z <- ncol(Z_in)
   
-  # # combination of covariates X and Z
+  # combination of covariates X and Z
   All_Covariates <- X
   for (i in 1:ncol(Z)) {
   if (!any(apply(X, 2, function(x) identical(x, Z[, i])))) {
@@ -99,14 +99,14 @@ zipcwm <- function(X, Z, Y,
     f_y_zip[Y == 0] <- pi_inv[Y == 0] + f_y_zip[Y == 0]
     f_y_zip <- pmax(f_y_zip, 1e-15)
       
-      tau[, k] <- pi_k[k] * f_covs * f_y_zip # 분자 : pi_k * phi_p * phi_1
+      tau[, k] <- pi_k[k] * f_covs * f_y_zip # 분자 : pi_k * phi_p * f_zip
       
       z_h2 <- rep(1, N) # poisson probability to update beta
       z_h2[Y == 0] <- ((1 - pi_inv[Y == 0]) * exp(-mu_y[Y == 0])) / (f_y_zip[Y == 0] + 1e-15)
       z_hat_2_list[, k] <- z_h2
     }
     
-    # 분모 : sum_{j=1}^{2} pi_j * phi_p * phi_1
+    # 분모 : sum_{j=1}^{2} pi_j * phi_p * f_zip
     row_sums <- rowSums(tau)
     curr_ll <- sum(log(row_sums + 1e-15))
     tau <- tau / (row_sums + 1e-15)
@@ -164,6 +164,7 @@ zipcwm <- function(X, Z, Y,
               beta = beta_k, gamma = gamma_k, loglik = ll_history,
               init_method = init_method))
 }
+
 
 
 
