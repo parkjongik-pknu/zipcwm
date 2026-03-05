@@ -66,13 +66,10 @@ zipcwm <- function(X, Z, Y,
     mu_k[[k]] <- colMeans(All_Covariates[idx, , drop=FALSE])
     sigma_k[[k]] <- cov(All_Covariates[idx, , drop=FALSE]) + diag(1e-5, Pall)
     
-    # 차원 축소 방지
+    # beta, gamma initialization
     beta_k[, k]  <- coef(glm(Y[idx] ~ X[idx, , drop=FALSE], family = poisson))
     gamma_k[, k] <- coef(glm(as.numeric(Y[idx] == 0) ~ Z[idx, , drop=FALSE], family = binomial))
 
-    # NA 발생 시 0으로 대체
-    beta_k[is.na(beta_k[, k]), k] <- 0
-    gamma_k[is.na(gamma_k[, k]), k] <- 0
   }
   
   ll_history <- numeric()
@@ -92,14 +89,15 @@ zipcwm <- function(X, Z, Y,
       mu_y <- as.vector(exp(X_in %*% beta_k[, k]))
       pi_inv <- as.vector(1 / (1 + exp(-(Z_in %*% gamma_k[, k]))))
       
-    # 0이 아닌 경우의 기본 Poisson 계산
+    # y가 0이 아닌 경우 Poisson 계산
     f_y_zip <- (1 - pi_inv) * dpois(Y, lambda = mu_y)
 
-    # Y가 0인 경우 Zero-inflation 계산
+    # y가 0인 경우 zero-inflation 계산
     f_y_zip[Y == 0] <- pi_inv[Y == 0] + f_y_zip[Y == 0]
     f_y_zip <- pmax(f_y_zip, 1e-15)
-      
-      tau[, k] <- pi_k[k] * f_covs * f_y_zip # 분자 : pi_k * phi_p * f_zip
+
+      # 분자 : pi_k * phi_p * f_zip
+      tau[, k] <- pi_k[k] * f_covs * f_y_zip 
       
       z_h2 <- rep(1, N) # poisson probability to update beta
       z_h2[Y == 0] <- ((1 - pi_inv[Y == 0]) * exp(-mu_y[Y == 0])) / (f_y_zip[Y == 0] + 1e-15)
@@ -164,6 +162,7 @@ zipcwm <- function(X, Z, Y,
               beta = beta_k, gamma = gamma_k, loglik = ll_history,
               init_method = init_method))
 }
+
 
 
 
